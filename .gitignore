@@ -1,0 +1,8 @@
+# Configuração local de teste (não faz parte do jogo)
+.claude/
+# Arquivos do sistema operacional
+Thumbs.db
+desktop.ini
+.DS_Store
+# Pacotes gerados para envio
+*.zip

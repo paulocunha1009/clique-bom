@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#174ea6">
+  <meta name="description" content="Clique Bom: jogo acessível para estimular e acompanhar habilidades motoras de pessoas com deficiência.">
+  <title>Clique Bom</title>
+  <!-- PWA (Etapa 7): permite instalar e jogar sem internet quando publicado em um endereço https -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/icone-180.png">
+  <meta name="apple-mobile-web-app-title" content="Clique Bom">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="assets/js/dados.js" defer></script>
+  <script src="assets/js/movimento.js" defer></script>
+  <script src="assets/js/relatorio-movimento.js" defer></script>
+  <script src="assets/js/acionamento.js" defer></script>
+  <script src="assets/js/protecao.js" defer></script>
+  <script src="assets/js/adaptativo.js" defer></script>
+  <script src="assets/js/interface.js" defer></script>
+  <script src="assets/js/planilha.js" defer></script>
+  <script src="assets/js/script.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <main id="conteudo" tabindex="-1">
+    <section id="inicio" class="screen" aria-labelledby="titulo-inicio">
+      <p class="brand"><img src="assets/icons/icone.svg" alt="" width="56" height="56"> Clique Bom</p>
+      <h1 id="titulo-inicio">Vamos jogar?</h1>
+      <p>Uma atividade de cliques no seu ritmo.</p>
+      <p id="perfil-menu" class="profile-current" aria-live="polite"></p>
+      <p id="fase-menu" class="phase-info" aria-live="polite"></p>
+      <div class="actions">
+        <button type="button" data-go="jogo">Iniciar jogo</button>
+        <button type="button" data-go="perfis">Perfis dos jogadores</button>
+        <button type="button" data-go="configuracoes">Configurações</button>
+        <button type="button" data-go="instrucoes">Como jogar</button>
+        <button type="button" data-go="historico">Histórico de resultados</button>
+        <button type="button" data-go="medalhas">Minhas medalhas</button>
+      </div>
+    </section>
+    <section id="medalhas" class="screen" aria-labelledby="titulo-medalhas" hidden>
+      <h1 id="titulo-medalhas">Medalhas e conquistas</h1>
+      <p id="medalhas-perfil"></p>
+      <p id="medalhas-progresso" role="status" aria-live="polite"></p>
+      <div id="grade-medalhas" class="badge-grid"></div>
+      <p class="setting-note">Medalhas são incentivos opcionais. O tempo não limita as partidas e não reduz pontos.</p>
+      <button type="button" data-go="inicio">Voltar ao menu</button>
+    </section>
+    <section id="perfis" class="screen" aria-labelledby="titulo-perfis" hidden>
+      <h1 id="titulo-perfis">Perfis dos jogadores</h1>
+      <p>Escolha quem vai jogar. Cada perfil mantém suas fases, resultados e preferências separadamente neste navegador.</p>
+      <p id="perfil-aviso" role="status" aria-live="polite"></p>
+      <div class="pro-bar" hidden></div>
+      <div class="profile-list" id="lista-perfis" aria-label="Jogadores cadastrados"></div>
+      <form id="form-perfil" class="profile-form">
+        <h2 class="form-title">Novo jogador</h2>
+        <div class="privacy-tip" role="note">
+          <strong>Proteja a identidade do aluno (LGPD):</strong> use um <strong>apelido</strong> (ex.: "Estrela", "Jogador 2") ou um <strong>código</strong>, e não o nome completo. Guarde a lista que liga o código ao nome fora do jogo, em local seguro.
+        </div>
+        <label for="nome-perfil">Apelido do jogador</label>
+        <input id="nome-perfil" name="nome" maxlength="40" required autocomplete="off" placeholder="Ex.: Estrela">
+        <label for="codigo-perfil">Código do participante (opcional, para pesquisa)</label>
+        <input id="codigo-perfil" name="codigo" maxlength="20" autocomplete="off" placeholder="Ex.: ESC03-A07" pattern="[A-Za-z0-9_\-]{1,20}" title="Use só letras, números e hífen, sem espaços. Exemplo: ESC03-A07" aria-describedby="codigo-ajuda">
+        <p id="codigo-ajuda" class="setting-note">Use só letras, números e hífen. Ex.: ESC03-A07 = escola 3, aluno 7. É este código que identifica o aluno nos relatórios do grupo de pesquisa.</p>
+        <button type="submit">Criar perfil</button>
+      </form>
+      <section class="backup-box" aria-labelledby="titulo-backup">
+        <h2 id="titulo-backup">Cópia de segurança (backup)</h2>
+        <p class="setting-note">Salve os dados em um arquivo para não perder nada ao trocar de computador ou limpar o navegador. Para levar um aluno para outro computador, use "Exportar" e, no outro computador, "Importar". Exige o modo profissional.</p>
+        <div class="actions">
+          <button type="button" id="btn-exportar-todos" class="button-secondary">Exportar backup de todos os perfis</button>
+          <button type="button" id="btn-importar-backup" class="button-secondary">Importar backup</button>
+        </div>
+        <input type="file" id="arquivo-backup" accept=".json,application/json" hidden>
+      </section>
+      <p class="setting-note">Os dados ficam guardados apenas neste navegador. Relatórios, backup e exclusão de dados ficam protegidos pelo PIN do modo profissional. O PIN impede o acesso de alunos, mas não é uma criptografia: uma pessoa com conhecimento técnico e acesso a este computador ainda conseguiria ler os dados.</p>
+      <button type="button" data-go="inicio">Voltar ao menu</button>
+    </section>
+    <section id="configuracoes" class="screen" aria-labelledby="titulo-configuracoes" hidden>
+      <h1 id="titulo-configuracoes">Configurações</h1>
+      <p>Personalize os efeitos e a interação conforme suas necessidades.</p>
+      <div class="feedback-settings">
+        <label><input type="checkbox" id="ativar-sons"> Ativar sons de acerto e conclusão</label>
+        <label><input type="checkbox" id="reduzir-animacoes"> Reduzir animações</label>
+        <label for="modo-dificuldade">Modo de dificuldade (escolha do profissional — pede o PIN)</label>
+        <select id="modo-dificuldade">
+          <option value="fases">Fases — 6 fases, figuras diminuem a cada fase (padrão)</option>
+          <option value="adaptativo">Adaptativo — o tamanho da figura se ajusta ao desempenho</option>
+        </select>
+        <p class="setting-note" id="descricao-adaptativo">No modo adaptativo, cada rodada tem 10 figuras. Depois de 3 acertos seguidos, a figura fica 10% menor. Depois de 2 erros seguidos, ela fica 15% maior na hora. Ela nunca fica menor que o tamanho mínimo escolhido abaixo. A rodada seguinte continua do tamanho alcançado. A fase do modo padrão fica guardada.</p>
+        <button type="button" id="btn-reiniciar-adaptativo" class="button-secondary" hidden>Recomeçar o tamanho adaptativo</button>
+        <label for="nivel-dificuldade">Dificuldade (definida automaticamente pela fase)</label>
+        <select id="nivel-dificuldade" disabled>
+          <option value="facil">Fácil — fases 1 e 2, figuras maiores</option>
+          <option value="medio">Médio — fases 3 e 4</option>
+          <option value="avancado">Avançado — fases 5 e 6, figuras menores</option>
+        </select>
+        <p class="setting-note" id="descricao-dificuldade">As figuras diminuem gradualmente a cada fase. Sem limite de tempo.</p>
+        <label for="tamanho-alvo">Tamanho mínimo do alvo (acessibilidade)</label>
+        <select id="tamanho-alvo">
+          <option value="normal">Normal</option>
+          <option value="grande">Grande</option>
+          <option value="extra">Extragrande</option>
+        </select>
+        <p class="setting-note">Os alvos diminuem de 160 px na fase 1 para 60 px na fase 6. Ao escolher um tamanho aqui, você define um mínimo para facilitar o clique: Normal (60 px), Grande (112 px) ou Extragrande (148 px). A configuração é salva para cada jogador.</p>
+        <button type="button" id="tamanho-automatico" class="button-secondary">Usar redução automática por fase</button>
+        <label><input type="checkbox" id="alto-contraste"> Ativar alto contraste</label>
+        <label><input type="checkbox" id="alvo-fixo"> Manter alvo no centro (sem deslocamento)</label>
+        <label for="modo-interacao">Modo de interação</label>
+        <select id="modo-interacao">
+          <option value="direto">Direto — mouse, toque ou teclado</option>
+          <option value="permanencia">Permanência — deixar o cursor parado sobre a figura</option>
+          <option value="varredura">Varredura automática — uma tecla ou acionador</option>
+        </select>
+        <!-- Opções que só aparecem no modo Direto -->
+        <div id="opcoes-direto" class="mode-options">
+          <label for="acionar-em">Quando o clique ou toque conta</label>
+          <select id="acionar-em">
+            <option value="soltar">Ao soltar o dedo ou o botão do mouse (padrão)</option>
+            <option value="pressionar">Ao encostar o dedo ou apertar o botão do mouse</option>
+          </select>
+          <p class="setting-note">"Ao soltar" deixa a pessoa ajustar a posição antes de soltar. "Ao encostar" ajuda quem tem dificuldade de manter o dedo ou a mão parada até soltar.</p>
+        </div>
+        <!-- Opções que só aparecem no modo Permanência -->
+        <div id="opcoes-permanencia" class="mode-options" hidden>
+          <label for="tempo-permanencia">Tempo parado sobre a figura</label>
+          <select id="tempo-permanencia">
+            <option value="1000">1 segundo</option>
+            <option value="2000">2 segundos</option>
+            <option value="3000">3 segundos</option>
+          </select>
+          <p class="setting-note">Um anel vai se completando em volta da figura enquanto o cursor (ou o dedo encostado) fica sobre ela. Quando o anel fecha, conta como acerto. Se sair da figura, o anel recomeça. Neste modo, apertar o botão do mouse não conta. Para acertar a mesma figura de novo (com alvo fixo), é preciso sair e voltar.</p>
+        </div>
+        <!-- Opções que só aparecem no modo Varredura -->
+        <div id="opcoes-varredura" class="mode-options" hidden>
+          <label for="velocidade-varredura">Intervalo da varredura</label>
+          <select id="velocidade-varredura">
+            <option value="1000">1 segundo</option>
+            <option value="2000">2 segundos</option>
+            <option value="3000">3 segundos</option>
+            <option value="5000">5 segundos</option>
+          </select>
+          <p class="setting-note">A área de jogo é dividida em partes, que são destacadas uma de cada vez. Pressione a tecla quando a parte com a figura estiver destacada. Depois das partes, aparece o botão "Opções do jogo", onde ficam Pausar, Reiniciar e Encerrar. Teclas aceitas: <strong>Espaço</strong>, <strong>Enter</strong> e a tecla extra, se houver.</p>
+          <p class="setting-note" id="tecla-extra-atual" role="status" aria-live="polite">Tecla extra: nenhuma.</p>
+          <button type="button" id="btn-escolher-tecla" class="button-secondary">Escolher tecla extra (para acionadores)</button>
+          <button type="button" id="btn-remover-tecla" class="button-secondary">Remover tecla extra</button>
+        </div>
+        <label for="filtro-tremor">Filtro de tremor</label>
+        <select id="filtro-tremor">
+          <option value="0">Desligado</option>
+          <option value="300">Ignorar repetições em menos de 0,3 segundo</option>
+          <option value="500">Ignorar repetições em menos de 0,5 segundo</option>
+          <option value="1000">Ignorar repetições em menos de 1 segundo</option>
+        </select>
+        <p class="setting-note">Ignora cliques, toques ou teclas repetidos logo depois de outro, causados por tremor. Os ignorados não contam como erro e aparecem no histórico.</p>
+        <label for="margem-alvo">Margem invisível ao redor da figura</label>
+        <select id="margem-alvo">
+          <option value="0">Nenhuma</option>
+          <option value="10">Pequena (10 pixels)</option>
+          <option value="20">Média (20 pixels)</option>
+          <option value="40">Grande (40 pixels)</option>
+        </select>
+        <p class="setting-note">Aumenta a área que conta como acerto, sem mudar o desenho da figura. Útil quando a pessoa chega perto, mas não consegue ficar exatamente dentro.</p>
+        <label for="tempo-destaque">Destaque de ajuda na figura</label>
+        <select id="tempo-destaque">
+          <option value="0">Desligado</option>
+          <option value="2000">Depois de 2 segundos</option>
+          <option value="5000">Depois de 5 segundos</option>
+          <option value="10000">Depois de 10 segundos</option>
+        </select>
+        <p class="setting-note">Se a pessoa demorar para acertar a figura, ela ganha uma borda colorida que pisca para chamar a atenção. Com animações reduzidas, a borda fica parada, sem piscar. A contagem para durante pausas e quando a aba fica oculta. O histórico mostra quantos acertos aconteceram antes e depois do destaque aparecer.</p>
+      </div>
+      <button type="button" data-go="inicio">Voltar ao menu</button>
+    </section>
+    <section id="instrucoes" class="screen" aria-labelledby="titulo-instrucoes" hidden>
+      <h1 id="titulo-instrucoes">Como jogar</h1>
+      <p>Selecione a figura geométrica que aparecer na área do jogo. Não há limite de tempo. As figuras ficam menores conforme as fases avançam.</p>
+      <ul class="how-to">
+        <li><strong>Modo Direto:</strong> clique com o mouse, toque na tela ou, com a figura em foco, use Enter ou Espaço.</li>
+        <li><strong>Modo Permanência:</strong> deixe o cursor parado sobre a figura até o anel em volta dela se completar.</li>
+        <li><strong>Modo Varredura:</strong> as partes da área de jogo são destacadas uma de cada vez. Pressione Espaço, Enter ou a tecla do acionador quando a parte com a figura estiver destacada.</li>
+      </ul>
+      <p>Em Configurações, você pode ajustar o tamanho mínimo das figuras, o alto contraste, o alvo fixo no centro, o destaque de ajuda, o filtro de tremor e a margem invisível ao redor da figura.</p>
+      <button type="button" data-go="inicio">Voltar ao menu</button>
+    </section>
+    <section id="historico" class="screen" aria-labelledby="titulo-historico" hidden>
+      <h1 id="titulo-historico">Histórico de resultados</h1>
+      <div class="pro-bar" hidden></div>
+      <p class="screen-intro">Escolha o jogador e veja os resultados por partes, nas abas abaixo.</p>
+      <p id="historico-aviso" role="status" aria-live="polite"></p>
+      <div class="history-filter" role="group" aria-label="Filtros do relatório">
+        <div class="filter-field"><label for="filtro-perfil-relatorio">Jogador</label><select id="filtro-perfil-relatorio"></select></div>
+        <div class="filter-field"><label for="filtro-historico">Dificuldade</label>
+          <select id="filtro-historico"><option value="todos">Todas</option><option value="facil">Fácil</option><option value="medio">Médio</option><option value="avancado">Avançado</option></select></div>
+      </div>
+      <div class="history-summary" id="historico-estatisticas" aria-live="polite"></div>
+      <!-- Etapa 9: o relatório é dividido em abas, para não ficar uma página enorme -->
+      <div class="tabs" id="abas-historico" role="tablist" aria-label="Partes do relatório">
+        <button type="button" role="tab" id="aba-resumo" aria-controls="painel-resumo"><span aria-hidden="true">📋</span> Resumo</button>
+        <button type="button" role="tab" id="aba-movimento" aria-controls="painel-movimento"><span aria-hidden="true">🖱️</span> Movimento</button>
+        <button type="button" role="tab" id="aba-graficos" aria-controls="painel-graficos"><span aria-hidden="true">📊</span> Gráficos</button>
+        <button type="button" role="tab" id="aba-partidas" aria-controls="painel-partidas"><span aria-hidden="true">📝</span> Partidas</button>
+        <button type="button" role="tab" id="aba-exportar" aria-controls="painel-exportar"><span aria-hidden="true">💾</span> Exportar</button>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="painel-resumo" aria-labelledby="aba-resumo" tabindex="0">
+        <h2 class="panel-title">Resumo</h2>
+        <div id="relatorio-indicadores" class="report-kpis" aria-label="Indicadores de acompanhamento"></div>
+        <details class="report-analysis" open>
+          <summary id="titulo-analise">Análise do período (em texto)</summary>
+          <div id="relatorio-analise" aria-live="polite"></div>
+        </details>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="painel-movimento" aria-labelledby="aba-movimento" tabindex="0" hidden>
+        <section class="report-motor" aria-labelledby="titulo-movimento">
+          <h2 id="titulo-movimento" class="panel-title">Indicadores de movimento</h2>
+          <p class="setting-note">Médias das partidas filtradas. Com mouse ou caneta, todos os indicadores são medidos. No toque na tela, só a distância até o centro, o índice de dificuldade e o throughput. No teclado e na varredura, nenhum deles se aplica.</p>
+          <div id="relatorio-movimento" class="report-kpis" aria-label="Indicadores de movimento"></div>
+        </section>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="painel-graficos" aria-labelledby="aba-graficos" tabindex="0" hidden>
+        <h2 class="panel-title">Gráficos das últimas 10 partidas</h2>
+        <div class="chart-picker">
+          <label for="escolha-grafico">Qual gráfico ver?</label>
+          <select id="escolha-grafico">
+            <option value="todos">Todos os gráficos</option>
+            <option value="pontos">Pontuação</option>
+            <option value="precisao">Precisão</option>
+            <option value="tempo">Tempo ativo</option>
+            <option value="tempo-alvo">Tempo médio por alvo</option>
+            <option value="eficiencia">Eficiência do caminho</option>
+            <option value="adaptativo">Tamanho alcançado (adaptativo)</option>
+            <option value="throughput">Throughput (Lei de Fitts)</option>
+          </select>
+        </div>
+        <div class="history-charts" aria-label="Gráficos de evolução das últimas dez partidas filtradas">
+        <section class="history-chart" data-grafico="pontos"><h3>Pontuação</h3><p>Partidas em ordem cronológica, da esquerda para a direita.</p><div id="grafico-pontos" class="chart-bars"></div></section>
+        <section class="history-chart" data-grafico="precisao"><h3>Precisão</h3><p>Percentual de acertos por tentativa.</p><div id="grafico-precisao" class="chart-bars"></div></section>
+        <section class="history-chart" data-grafico="tempo"><h3>Tempo ativo</h3><p>Tempo de jogo, excluindo pausas e períodos com a aba oculta. Barras em segundos.</p><div id="grafico-tempo" class="chart-bars"></div></section>
+        <section class="history-chart" data-grafico="tempo-alvo"><h3>Tempo médio por alvo</h3><p>Intervalo médio até o acerto de cada figura. Barras em segundos.</p><div id="grafico-tempo-alvo" class="chart-bars"></div></section>
+        <section class="history-chart" data-grafico="eficiencia"><h3>Eficiência do caminho</h3><p>100% = cursor em linha reta até a figura. Barras em porcentagem.</p><div id="grafico-eficiencia" class="chart-bars"></div></section>
+        <section class="history-chart" data-grafico="adaptativo"><h3>Tamanho alcançado (modo adaptativo)</h3><p>Tamanho da figura ao fim de cada rodada adaptativa. Barras menores = figuras menores. Valores em pixels.</p><div id="grafico-adaptativo" class="chart-bars"></div></section>
+        <section class="history-chart" data-grafico="throughput"><h3>Throughput (Lei de Fitts)</h3><p>Velocidade e precisão juntas. Quanto maior, melhor. Barras em bits por segundo.</p><div id="grafico-throughput" class="chart-bars"></div></section>
+      </div>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="painel-partidas" aria-labelledby="aba-partidas" tabindex="0" hidden>
+        <h2 class="panel-title">Partidas</h2>
+        <p id="partidas-contador" class="setting-note" aria-live="polite"></p>
+        <div class="history-scroll">
+        <table class="history-table">
+          <caption>Partidas filtradas, da mais recente para a mais antiga</caption>
+          <thead><tr><th scope="col">Data</th><th scope="col" class="th-player">Jogador</th><th scope="col">Nível</th><th scope="col">Situação</th><th scope="col">Pontos</th><th scope="col">Acertos</th><th scope="col">Precisão</th><th scope="col">Tempo ativo</th><th scope="col">Média/alvo</th><th scope="col">Mais números</th><th scope="col">Movimento</th><th scope="col">Configuração usada</th></tr></thead>
+          <tbody id="historico-corpo"></tbody>
+        </table>
+        </div>
+        <button type="button" id="btn-mais-partidas" class="button-secondary" hidden>Mostrar mais partidas</button>
+      </div>
+      <div class="tab-panel" role="tabpanel" id="painel-exportar" aria-labelledby="aba-exportar" tabindex="0" hidden>
+        <h2 class="panel-title">Exportar e compartilhar</h2>
+        <section class="backup-box" aria-labelledby="titulo-baixar">
+          <h3 id="titulo-baixar">Baixar os dados (planilhas CSV)</h3>
+          <p class="setting-note">Os arquivos abrem no Excel, no LibreOffice e no Google Planilhas. Eles seguem o filtro escolhido acima.</p>
+          <div class="actions">
+            <button type="button" id="btn-exportar-relatorio" class="button-secondary">Resumo de cada partida (CSV)</button>
+            <button type="button" id="btn-exportar-cliques" class="button-secondary">Cada clique (CSV)</button>
+            <button type="button" id="btn-exportar-trajetorias" class="button-secondary">Trajetórias do cursor (CSV)</button>
+          </div>
+        </section>
+        <!-- Etapa 8: envio dos resumos para a Planilha Google do grupo de pesquisa -->
+      <section id="painel-planilha" class="backup-box" aria-labelledby="titulo-planilha">
+        <h3 id="titulo-planilha">Planilha do grupo de pesquisa</h3>
+        <p class="setting-note">Envia um resumo de cada partida para a Planilha Google do grupo. Vai <strong>só o código do participante</strong>, nunca o apelido. Perfis sem código não são enviados. Cliques e trajetórias continuam só neste computador. Sem internet, as partidas esperam numa fila e são enviadas depois. Use somente com a autorização dos responsáveis e da escola.</p>
+        <p id="planilha-estado" class="planilha-estado" role="status" aria-live="polite"></p>
+        <p id="planilha-sem-codigo" class="setting-note"></p>
+        <form id="form-planilha" class="profile-form" novalidate>
+          <label for="planilha-url">Endereço do receptor (fornecido pelo grupo)</label>
+          <input id="planilha-url" type="url" autocomplete="off" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec">
+          <label for="planilha-chave">Chave do projeto (fornecida pelo grupo)</label>
+          <input id="planilha-chave" type="password" autocomplete="off">
+          <label for="planilha-escola">Escola/turma (opcional, ex.: ESC03)</label>
+          <input id="planilha-escola" maxlength="20" autocomplete="off">
+          <label class="check-line"><input type="checkbox" id="planilha-ativo"> Enviar automaticamente os resumos das partidas</label>
+          <button type="submit">Salvar configuração</button>
+        </form>
+        <div class="actions">
+          <button type="button" id="btn-planilha-testar" class="button-secondary">Testar conexão</button>
+          <button type="button" id="btn-planilha-enviar" class="button-secondary">Enviar pendentes agora</button>
+          <button type="button" id="btn-planilha-antigas" class="button-secondary">Enviar também as partidas antigas</button>
+        </div>
+        <p id="planilha-aviso" class="setting-note" role="status" aria-live="polite"></p>
+      </section>
+        <section class="backup-box danger-box" aria-labelledby="titulo-apagar">
+          <h3 id="titulo-apagar">Apagar dados</h3>
+          <p class="setting-note">Apaga todas as partidas do jogador escolhido no filtro. Não dá para desfazer: faça um backup antes, em Perfis dos jogadores.</p>
+          <button type="button" id="btn-limpar-historico" class="button-danger">Apagar histórico do jogador</button>
+        </section>
+      </div>
+      <button type="button" data-go="inicio" class="back-button">Voltar ao menu</button>
+      <dialog id="modal-trajetoria" class="result-dialog trajectory-dialog" aria-labelledby="titulo-trajetoria">
+        <h2 id="titulo-trajetoria">Caminho do cursor</h2>
+        <p id="trajetoria-info" class="setting-note"></p>
+        <label for="trajetoria-alvo">Mostrar</label>
+        <select id="trajetoria-alvo"></select>
+        <div id="trajetoria-desenho" class="trajectory-box" role="img" aria-label="Desenho do caminho do cursor"></div>
+        <ul class="trajectory-legend">
+          <li><span aria-hidden="true">◯</span> Círculo com número: a figura (alvo)</li>
+          <li><span aria-hidden="true">■</span> Quadrado: onde o cursor estava quando a figura apareceu</li>
+          <li><span aria-hidden="true">—</span> Linha: caminho feito pelo cursor</li>
+          <li><span aria-hidden="true">●</span> Bolinha: clique certo</li>
+          <li><span aria-hidden="true">✕</span> Xis: clique fora da figura</li>
+        </ul>
+        <p id="trajetoria-resumo" class="setting-note"></p>
+        <button type="button" id="btn-fechar-trajetoria" class="button-secondary">Fechar</button>
+      </dialog>
+    </section>
+    <section id="jogo" class="screen game-screen" aria-label="Desafio de cliques" hidden>
+      <p class="phase-info" id="fase-atual" aria-live="polite"></p>
+      <p class="game-subtitle" id="desafio-atual">Desafio 1 — Clique no alvo</p>
+      <div class="game-stats" aria-label="Informações da partida">
+        <div class="stat"><span>Pontos</span><strong id="pontos">0</strong></div>
+        <div class="stat"><span>Acertos</span><strong id="acertos">0</strong></div>
+        <div class="stat"><span>Tentativas</span><strong id="tentativas">0</strong></div>
+        <div class="stat"><span>Precisão</span><strong id="precisao">—</strong></div>
+        <div class="stat"><span>Tempo ativo</span><strong id="tempo-ativo">00:00</strong></div>
+        <div class="stat"><span>Média por alvo</span><strong id="tempo-medio">—</strong></div>
+      </div>
+      <div class="progress-label"><label for="progresso">Progresso do desafio</label><output id="progresso-texto" for="progresso">0%</output></div>
+      <p class="goal-detail" id="detalhe-meta">Meta: acertar 5 alvos · Restam 5</p>
+      <progress id="progresso" max="5" value="0" aria-describedby="detalhe-meta">0 de 10</progress>
+      <p id="aviso-varredura" class="scan-hint" aria-live="off" hidden>Varredura ativa. Pressione Espaço para selecionar a opção destacada.</p>
+      <div id="area-jogo" class="game-area" role="group" aria-label="Área de interação do jogo" aria-describedby="aviso-area">
+        <div class="game-area-message" id="aviso-area">O alvo aparecerá aqui quando a partida começar.</div>
+        <div class="game-overlay" id="aviso-pausa" hidden>Partida pausada</div>
+      </div>
+      <p class="status-message" id="estado-jogo" role="status" aria-live="polite">Pronto para jogar</p>
+      <p id="feedback-visual" class="feedback-visual" aria-hidden="true"></p>
+      <dialog id="modal-resultado" class="result-dialog" aria-labelledby="titulo-resumo" aria-describedby="resumo-texto">
+        <section id="resumo-partida" class="game-summary">
+          <h2 id="titulo-resumo">Desafio concluído!</h2>
+          <p id="mensagem-resultado" class="result-message"></p>
+          <p id="resumo-texto"></p>
+          <div id="medalhas-novas" class="new-badges" aria-live="polite" hidden></div>
+          <p id="estrelas-partida" class="reward-stars" aria-label="Recompensa"></p>
+          <div class="result-actions">
+            <button type="button" id="btn-proxima-fase" hidden>Avançar para a próxima fase</button>
+            <button type="button" id="btn-fechar-resultado" class="button-secondary">Fechar resultado</button>
+          </div>
+        </section>
+      </dialog>
+      <div class="game-controls">
+        <!-- Botões usados apenas no modo Varredura (aparecem só nele) -->
+        <button type="button" id="btn-opcoes-varredura" hidden>Opções do jogo</button>
+        <button type="button" id="btn-voltar-jogo-varredura" hidden>Voltar ao jogo</button>
+        <button type="button" id="btn-pausar">Pausar</button>
+        <button type="button" id="btn-reiniciar" class="button-secondary">Reiniciar</button>
+        <button type="button" id="btn-encerrar" class="button-secondary">Encerrar partida</button>
+        <button type="button" data-go="inicio" class="button-secondary">Voltar ao menu</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Etapa 5: janela do PIN do modo profissional -->
+  <dialog id="modal-pin" class="result-dialog pin-dialog" aria-labelledby="titulo-pin" aria-describedby="pin-texto">
+    <form id="form-pin" novalidate>
+      <h2 id="titulo-pin">Área do profissional</h2>
+      <p id="pin-texto"></p>
+      <div id="pin-campo-codigo" class="pin-field" hidden>
+        <label for="pin-codigo">Código de recuperação</label>
+        <input id="pin-codigo" autocomplete="off" maxlength="20" autocapitalize="characters">
+      </div>
+      <div id="pin-campo-1" class="pin-field">
+        <label for="pin-1" id="pin-1-rotulo">PIN</label>
+        <input id="pin-1" type="password" inputmode="numeric" autocomplete="off" maxlength="8">
+      </div>
+      <div id="pin-campo-2" class="pin-field" hidden>
+        <label for="pin-2">Repita o PIN</label>
+        <input id="pin-2" type="password" inputmode="numeric" autocomplete="off" maxlength="8">
+      </div>
+      <p id="pin-recuperacao" class="pin-recovery" hidden></p>
+      <p id="pin-erro" class="pin-error" role="alert"></p>
+      <div class="result-actions">
+        <button type="submit" id="btn-pin-ok">Entrar</button>
+        <button type="button" id="btn-pin-cancelar" class="button-secondary">Cancelar</button>
+      </div>
+      <button type="button" id="btn-pin-esqueci" class="link-button">Esqueci o PIN</button>
+    </form>
+  </dialog>
+
+  <!-- Etapa 5: janela de escolha com vários botões (ex.: ao importar backup) -->
+  <dialog id="modal-escolha" class="result-dialog" aria-labelledby="titulo-escolha" aria-describedby="texto-escolha">
+    <h2 id="titulo-escolha"></h2>
+    <p id="texto-escolha"></p>
+    <div id="botoes-escolha" class="result-actions"></div>
+  </dialog>
+
+  <!-- Etapa 5: editar apelido e código de um perfil -->
+  <dialog id="modal-editar-perfil" class="result-dialog" aria-labelledby="titulo-editar-perfil">
+    <form id="form-editar-perfil" class="profile-form" novalidate>
+      <h2 id="titulo-editar-perfil">Editar perfil</h2>
+      <label for="editar-nome">Apelido do jogador</label>
+      <input id="editar-nome" maxlength="40" autocomplete="off">
+      <label for="editar-codigo">Código do participante (opcional)</label>
+      <input id="editar-codigo" maxlength="20" autocomplete="off" placeholder="Ex.: ESC03-A07">
+      <p id="editar-erro" class="pin-error" role="alert"></p>
+      <div class="result-actions">
+        <button type="submit">Salvar</button>
+        <button type="button" id="btn-editar-cancelar" class="button-secondary">Cancelar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <footer>Clique Bom — jogue no seu ritmo. Cada conquista importa!</footer>
+</body>
+</html>

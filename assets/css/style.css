@@ -1,0 +1,506 @@
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#162c45;background:#f3f7fc;font-size:18px;line-height:1.5}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:flex;flex-direction:column}main{flex:1;width:min(100%,860px);margin:auto;padding:2rem 1rem}.screen{background:white;border-radius:20px;padding:clamp(1.25rem,4vw,3rem);box-shadow:0 5px 22px #16355b14;text-align:center}.screen[hidden]{display:none}h1{font-size:clamp(1.8rem,5vw,2.8rem);line-height:1.2;margin:0 0 1rem}p{margin:0 auto 1.75rem;max-width:34rem}.actions{display:flex;flex-direction:column;align-items:center;gap:1rem}button{appearance:none;border:2px solid #174ea6;border-radius:14px;background:#174ea6;color:white;min-height:60px;min-width:min(100%,280px);padding:.8rem 1.25rem;font:inherit;font-weight:700;cursor:pointer}button:hover{background:#103e87}button:focus-visible,.skip-link:focus-visible{outline:4px solid #ff9c23;outline-offset:4px}.game-placeholder{border:3px dashed #6685b0;border-radius:16px;min-height:240px;display:grid;place-items:center;margin:1.5rem 0;background:#edf4ff;font-weight:600}footer{text-align:center;padding:1rem;color:#3c536c}.skip-link{position:absolute;top:-100px;left:1rem;padding:.5rem;background:white;color:#162c45;z-index:10}.skip-link:focus{top:1rem}@media(max-width:480px){main{padding:1rem}.screen{border-radius:14px}button{width:100%}}@media(prefers-reduced-motion:no-preference){button{transition:background-color .15s ease}}
+
+/* Etapa 3: estrutura visual e controles da área de jogo */
+.game-screen{max-width:100%}.game-subtitle{font-weight:700;color:#174ea6;margin-bottom:1.25rem}
+.game-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin-bottom:1.5rem}
+.stat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;background:#edf4ff;border:2px solid #c4d7f4;border-radius:14px;padding:1rem .4rem}
+.stat span{font-size:.85rem;font-weight:600}.stat strong{font-size:1.8rem;line-height:1.2;font-variant-numeric:tabular-nums}
+.progress-label{display:flex;justify-content:space-between;gap:1rem;font-weight:700;margin-bottom:.4rem;text-align:left}
+progress{display:block;width:100%;height:1.3rem;accent-color:#174ea6;margin-bottom:1.4rem}
+.game-area{min-height:clamp(260px,44vw,400px);border:3px solid #6685b0;border-radius:18px;background:#f0f6ff;display:grid;place-items:center;position:relative;overflow:hidden;padding:1rem}
+.game-area-message{max-width:24rem;color:#344e6b;font-weight:600}
+.status-message{margin:1rem auto;font-weight:700;min-height:1.5rem}
+.game-controls{display:flex;flex-wrap:wrap;justify-content:center;gap:.75rem}
+.game-controls button{min-width:150px;flex:1 1 160px}
+.button-secondary{background:white;color:#174ea6}.button-secondary:hover{background:#e7f0ff}
+button:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:540px){.game-stats{gap:.4rem}.stat{padding:.7rem .2rem}.stat span{font-size:.72rem}.stat strong{font-size:1.4rem}.game-controls button{flex-basis:100%}}
+
+/* Etapa 4: alvos reais e acessíveis */
+.click-target{
+  position:absolute;
+  width:clamp(76px,14vw,112px);
+  height:clamp(76px,14vw,112px);
+  min-width:0;
+  min-height:0;
+  padding:0;
+  display:grid;
+  place-items:center;
+  border:4px solid #0b3670;
+  border-radius:50%;
+  background:#f9bb39;
+  color:#173451;
+  font-size:2.4rem;
+  line-height:1;
+  touch-action:manipulation;
+  user-select:none;
+}
+.click-target:hover{background:#ffd26c}
+.click-target:focus-visible{outline:5px solid #c42d65;outline-offset:3px}
+.click-target:disabled{opacity:.55;cursor:not-allowed}
+.game-area-message[hidden]{display:none}
+
+/* Ajustes de interface: painel de estatísticas compacto */
+.game-screen{padding:clamp(.9rem,2vw,1.5rem)}
+.game-subtitle{margin-bottom:.65rem}
+.game-stats{gap:.45rem;margin-bottom:.8rem}
+.stat{padding:.35rem .3rem;border-width:1px;border-radius:9px;gap:0;min-height:54px}
+.stat span{font-size:.72rem;line-height:1.2}
+.stat strong{font-size:1.15rem;line-height:1.25}
+progress{margin-bottom:.85rem}
+@media(max-width:540px){.stat{padding:.3rem .15rem;min-height:48px}.stat span{font-size:.65rem}.stat strong{font-size:1.05rem}}
+
+/* Etapa 5: quatro indicadores compactos e resumo de partida */
+.game-stats{grid-template-columns:repeat(4,minmax(0,1fr));gap:.35rem}
+.stat{min-width:0;padding:.3rem .12rem}
+.stat span{font-size:clamp(.57rem,1.7vw,.72rem)}
+.stat strong{font-size:clamp(.9rem,2.4vw,1.15rem)}
+.game-summary{background:#eaf7ee;border:2px solid #387f54;border-radius:12px;padding:.7rem;margin:.65rem 0}
+.game-summary[hidden]{display:none}
+.game-summary h2{font-size:1.1rem;margin:0 0 .25rem}
+.game-summary p{margin:0}
+@media(max-width:390px){.game-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Etapa 6: retirar completamente o padding do elemento main */
+main{padding:0}
+@media(max-width:480px){main{padding:0}}
+/* Indicador de pausa não bloqueia os controles fora da área de jogo */
+.game-overlay{position:absolute;inset:0;display:grid;place-items:center;background:#edf4fff2;color:#173451;font-weight:800;font-size:1.4rem;z-index:2}
+.game-overlay[hidden]{display:none}
+
+/* Etapa 7: objetivo e progresso visíveis sem ocupar a área de interação */
+.goal-detail{font-size:.75rem;color:#34506c;font-weight:600;margin:0 0 .3rem;text-align:left;max-width:none}
+.progress-label{margin-bottom:.15rem;font-size:.9rem}
+progress{height:.9rem;margin-bottom:.6rem}
+
+/* Etapa 8: gamificação sem ocupar a área dos alvos */
+.feedback-settings{display:flex;flex-direction:column;gap:1rem;max-width:36rem;margin:1rem auto;text-align:left}
+.feedback-settings label{display:flex;align-items:center;gap:.7rem;font-weight:600}
+.feedback-settings input{width:1.4rem;height:1.4rem;accent-color:#174ea6}
+.feedback-visual{margin:.2rem auto;min-height:1.3rem;font-weight:800;color:#155b39}
+.feedback-visual.celebration{font-size:1.2rem}
+.reward-stars{font-size:1.9rem;letter-spacing:.15em;color:#8c5800;line-height:1.3}
+.feedback-enter{animation:feedback-pop .35s ease-out}
+@keyframes feedback-pop{from{opacity:.2;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+.reduced-motion .feedback-enter{animation:none}
+@media(prefers-reduced-motion:reduce){.feedback-enter{animation:none}}
+
+/* Alvo com base circular clara e figura geométrica central */
+.click-target{background:#dcecff;border-color:#6385ad;}
+.click-target:hover{background:#c9e1ff;}
+.target-shape{display:block;width:74%;height:74%;fill:var(--shape-color);pointer-events:none;}
+
+/* Etapa 9: personalização da área acionável e contraste */
+:root{--target-diameter:clamp(76px,14vw,112px)}
+:root[data-target-size="grande"]{--target-diameter:clamp(112px,19vw,148px)}
+:root[data-target-size="extra"]{--target-diameter:clamp(148px,24vw,190px)}
+.click-target{width:var(--target-diameter);height:var(--target-diameter)}
+.feedback-settings select{font:inherit;padding:.65rem;border:2px solid #174ea6;border-radius:10px;background:#fff;color:#162c45;min-height:52px}
+.feedback-settings select:focus-visible,.feedback-settings input:focus-visible{outline:4px solid #ff9c23;outline-offset:3px}
+.high-contrast{background:#fff;color:#111}
+.high-contrast .screen{background:#fff;color:#111;box-shadow:none;border:2px solid #111}
+.high-contrast .game-area{background:#fff;border-color:#111}
+.high-contrast .stat{background:#fff;border:2px solid #111}
+.high-contrast .click-target{background:#fff;border:5px solid #111}
+.high-contrast .click-target:hover{background:#e5e5e5}
+.high-contrast .target-shape{filter:brightness(.48)}
+.high-contrast .game-subtitle,.high-contrast .goal-detail,.high-contrast .status-message{color:#111}
+.high-contrast .game-overlay{background:#fff;color:#111}
+.high-contrast button:focus-visible{outline:5px solid #ff8a00}
+@media(max-width:480px){.game-area{min-height:310px;padding:0}}
+
+/* Etapa 10: seletor de dificuldade */
+.setting-note{font-size:.86rem;color:#34506c;margin:-.4rem 0 .15rem;max-width:36rem}
+.high-contrast .setting-note{color:#111}
+
+/* Etapa 11: histórico local responsivo e navegável por teclado */
+.history-summary{font-weight:700;margin:.75rem 0}
+.history-scroll{max-width:100%;overflow-x:auto;margin:1rem 0}
+.history-table{width:100%;border-collapse:collapse;text-align:left;font-size:.9rem}
+.history-table caption{text-align:left;font-weight:600;margin-bottom:.5rem}
+.history-table th,.history-table td{padding:.55rem .65rem;border-bottom:1px solid #9db5cd;white-space:nowrap}
+.history-table th{background:#e6f0ff;color:#142e4c}
+.history-table tbody tr:nth-child(even){background:#f1f6ff}
+.history-scroll:focus-within{outline-offset:2px}
+.high-contrast .history-table th,.high-contrast .history-table td{border-color:#111}
+.high-contrast .history-table th,.high-contrast .history-table tbody tr:nth-child(even){background:#eee;color:#111}
+
+/* Etapa 12: gráficos acessíveis e filtro */
+.history-filter{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem;margin:1rem 0}
+.history-filter select{min-height:44px;padding:.4rem .7rem;font:inherit;border:2px solid #174ea6;border-radius:8px;background:#fff;color:#162c45}
+.history-filter select:focus-visible{outline:3px solid #ff9c23;outline-offset:2px}
+.history-charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:1rem;margin:1rem 0}
+.history-chart{min-width:0;border:1px solid #b2c7dc;border-radius:12px;padding:.75rem;background:#f7faff}
+.history-chart h2{font-size:1.05rem;margin:0 0 .25rem}
+.history-chart p{font-size:.8rem;margin:0 0 .5rem}
+.chart-bars{display:flex;gap:.35rem;align-items:end;min-height:150px;overflow-x:auto;padding:.5rem .15rem}
+.chart-item{flex:1 0 25px;min-width:25px;display:flex;flex-direction:column;align-items:center;gap:.25rem;font-size:.7rem;font-variant-numeric:tabular-nums}
+.chart-track{height:100px;width:100%;max-width:40px;display:flex;align-items:end;background:#e0eaf7;border:1px solid #7b99bc;border-radius:4px;overflow:hidden}
+.chart-bar{width:100%;background:#174ea6;min-height:0}
+.chart-index{font-weight:700}
+.high-contrast .history-chart{background:#fff;border:2px solid #111}
+.high-contrast .chart-track{background:#fff;border:2px solid #111}
+.high-contrast .chart-bar{background:#111}
+
+/* Etapa 16 — varredura visual com realce amplo e estável */
+.scan-selected,.scan-selected:hover{outline:6px solid #d32b69!important;outline-offset:5px!important;box-shadow:0 0 0 11px #fff8b0!important;position:relative;z-index:3}
+.scan-hint{margin:.5rem auto .85rem;font-weight:700;color:#173451}
+.scan-hint[hidden]{display:none}
+.high-contrast .scan-selected{outline:7px solid #ffb700!important;box-shadow:0 0 0 12px #111!important}
+@media(prefers-reduced-motion:reduce){.scan-selected{transition:none!important;animation:none!important}}
+
+/* Progressão por fases: informação compacta, sem ocupar a área de jogo */
+.phase-info{font-size:.95rem;font-weight:700;color:#174a81;margin:0 auto .45rem}
+#btn-proxima-fase[hidden]{display:none}
+
+/* Perfis dos jogadores */
+.profile-current{font-weight:700;margin-bottom:.8rem}
+.profile-list{display:grid;gap:.75rem;margin:1.25rem 0}
+.profile-row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:center;border:2px solid #bdd0e6;border-radius:14px;padding:.7rem}
+.profile-row span{flex:1;min-width:160px;text-align:left;font-weight:700;overflow-wrap:anywhere}
+.profile-row button{min-width:115px;min-height:48px;padding:.5rem .8rem}
+.profile-form{display:grid;gap:.65rem;margin:1.5rem auto;max-width:440px;text-align:left}
+.profile-form input{font:inherit;padding:.8rem;border:2px solid #174ea6;border-radius:10px;width:100%}
+.profile-form input:focus-visible{outline:4px solid #ff9c23;outline-offset:2px}
+@media(max-width:480px){.profile-row span{flex-basis:100%}.profile-row button{flex:1}}
+
+/* Métricas de tempo e indicação visual após dois segundos sem acerto */
+.game-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.stat strong{font-variant-numeric:tabular-nums}
+.click-target.target-attention{outline:6px solid #e23672;outline-offset:4px;animation:target-guidance .8s ease-in-out infinite alternate}
+@keyframes target-guidance{from{box-shadow:0 0 0 0 #e2367270;filter:brightness(1)}to{box-shadow:0 0 0 13px #e2367240;filter:brightness(1.14)}}
+.reduced-motion .click-target.target-attention{animation:none;outline-style:dashed;box-shadow:0 0 0 5px #ffcf4c}
+@media(prefers-reduced-motion:reduce){.click-target.target-attention{animation:none;outline-style:dashed;box-shadow:0 0 0 5px #ffcf4c}}
+.high-contrast .click-target.target-attention{outline-color:#111;box-shadow:0 0 0 7px #ffdf00}
+@media(max-width:390px){.game-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Modal central de conclusão de fase, com foco e navegação por teclado nativos */
+.result-dialog{position:fixed;inset:0;margin:auto;width:min(92vw,540px);max-height:min(88vh,720px);overflow-y:auto;border:3px solid #174ea6;border-radius:20px;padding:clamp(1rem,4vw,2rem);background:#fff;color:#183451;box-shadow:0 18px 65px #0006;text-align:center}
+.result-dialog::backdrop{background:rgba(9,22,43,.74)}
+.result-dialog .game-summary{margin:0;padding:0;background:transparent;border:0;box-shadow:none}
+.result-dialog h2{font-size:clamp(1.5rem,4vw,2rem);margin:0 0 .65rem}
+.result-message{font-weight:800;font-size:1.15rem;margin:.5rem 0 1rem}
+.result-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:.85rem;margin-top:1.25rem}
+.result-actions button{min-height:52px;max-width:100%}
+.high-contrast .result-dialog{background:#fff;color:#111;border:5px solid #111}
+.high-contrast .result-dialog::backdrop{background:#000d}
+
+
+/* Área do jogo inteiramente visível e responsiva, inclusive em telas baixas. */
+html, body { max-width:100%; }
+.game-screen { min-width:0; max-width:100%; }
+#area-jogo.game-area {
+  box-sizing:border-box;
+  display:grid;
+  position:relative;
+  width:100%;
+  max-width:100%;
+  height:clamp(160px, 42dvh, 360px);
+  min-height:0;
+  max-height:calc(100dvh - 24px);
+  margin-inline:auto;
+  padding:12px;
+  overflow:hidden;
+  container-type:size;
+  scroll-margin-block:12px;
+}
+/* O alvo nunca excede o espaço interno disponível, mesmo no tamanho extragrande. */
+#area-jogo .click-target {
+  box-sizing:border-box;
+  width:min(var(--target-diameter), calc(100cqw - 28px), calc(100cqh - 28px));
+  height:min(var(--target-diameter), calc(100cqw - 28px), calc(100cqh - 28px));
+  max-width:calc(100% - 24px);
+  max-height:calc(100% - 24px);
+  flex-shrink:0;
+}
+@media (max-width:600px) {
+  .game-screen { padding:clamp(8px, 3vw, 20px); }
+  #area-jogo.game-area { height:clamp(160px, 38dvh, 300px); }
+}
+@media (max-height:520px) and (orientation:landscape) {
+  #area-jogo.game-area { height:clamp(120px, 36dvh, 200px); }
+}
+
+/* Painel profissional de acompanhamento */
+.report-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:.75rem;margin:1rem 0}
+.report-kpi{border:2px solid #b2c7dc;border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.35rem;background:#f7faff;min-width:0}
+.report-kpi span{font-weight:700}.report-kpi strong{font-size:1.5rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.report-kpi small{font-size:.85rem}
+.report-analysis{border:2px solid #b2c7dc;border-radius:12px;padding:1rem;margin:1rem 0;background:#f7faff}
+.report-analysis h2{margin-top:0}.report-analysis li{margin-bottom:.5rem;line-height:1.5}
+.high-contrast .report-kpi,.high-contrast .report-analysis{background:#fff;color:#000;border-color:#000}
+.history-scroll{overflow-x:auto;max-width:100%}.history-table{min-width:980px}
+
+/* Medalhas por jogador */
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:1rem;margin:1.2rem 0 2rem;text-align:left}
+.achievement{border:2px solid #bacbe2;border-radius:16px;padding:1rem;background:#f8fbff;display:flex;flex-direction:column;gap:.4rem;min-width:0}
+.achievement.unlocked{border-color:#a97718;background:#fff8e7}
+.achievement.locked{background:#f4f5f7;color:#3e4b5d}
+.achievement-icon{font-size:2.2rem;line-height:1.3}
+.achievement-category{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.achievement h2{font-size:1.12rem;margin:0}
+.achievement p{margin:0;max-width:none}
+.achievement-status{font-size:.86rem;font-weight:700;margin-top:auto!important}
+.new-badges{border:2px solid #a97718;background:#fff8e7;color:#3b2b0d;padding:.8rem;border-radius:12px;margin:1rem 0;font-weight:700;overflow-wrap:anywhere}
+.high-contrast .achievement{border-color:currentColor;background:transparent;color:inherit}
+.high-contrast .new-badges{border-color:#111;background:#ffed75;color:#111}
+
+/* Coluna "Configuração usada" do histórico: uma informação por linha */
+.history-table td.config-cell{text-align:left;font-size:.8rem;line-height:1.35;min-width:15rem}
+.history-table td.config-cell span{display:block}
+
+/* Etapa 2 — Indicadores de movimento */
+.report-motor{border:2px solid #b2c7dc;border-radius:12px;padding:1rem;margin:1rem 0;background:#fff;text-align:left}
+.report-motor h2{margin-top:0;text-align:center}
+.report-kpi small.kpi-base{color:#4a5f78;font-style:italic}
+.button-small{min-height:44px;min-width:0;padding:.35rem .8rem;font-size:.85rem;margin-top:.4rem;white-space:normal}
+.high-contrast .report-motor{border-color:#000}
+.high-contrast .report-kpi small.kpi-base{color:#111}
+
+/* Janela "Caminho do cursor" */
+.trajectory-dialog{width:min(96vw,900px)}
+.trajectory-dialog select{min-height:44px;font:inherit;margin:.25rem 0 .75rem}
+.trajectory-box{width:100%;border:2px solid #b2c7dc;border-radius:12px;background:#f7faff;padding:.4rem;min-height:120px;display:grid;place-items:center}
+.trajectory-svg{width:100%;height:auto;max-height:60vh}
+.traj-area{fill:#eef4fc;stroke:#6685b0;stroke-width:3}
+.traj-alvo{fill:#ffffffcc;stroke-width:3}
+.traj-num{text-anchor:middle;dominant-baseline:central;font-weight:700;font-family:inherit}
+.traj-linha{fill:none;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round;opacity:.9}
+.traj-erro{stroke:#c0182f;stroke-width:3.5;stroke-linecap:round}
+.traj-acerto{stroke:#fff;stroke-width:2}
+.traj-inicio{stroke:#fff;stroke-width:1.5}
+.trajectory-legend{list-style:none;padding:0;margin:.75rem 0;display:flex;flex-wrap:wrap;gap:.35rem 1.1rem;justify-content:center;font-size:.85rem}
+.trajectory-legend span{font-weight:700;margin-right:.25rem}
+.high-contrast .trajectory-box{background:#fff;border-color:#111}
+.high-contrast .traj-area{fill:#fff;stroke:#111}
+.high-contrast .traj-erro{stroke:#000}
+
+/* Etapa 4 — Grupos de opções de cada modo nas Configurações */
+.mode-options{display:flex;flex-direction:column;gap:.75rem;border-left:4px solid #b2c7dc;padding-left:1rem}
+.mode-options[hidden]{display:none}
+.feedback-settings select{min-height:48px;font:inherit}
+.how-to{text-align:left;max-width:34rem;margin:0 auto 1.5rem;line-height:1.5}
+.how-to li{margin-bottom:.5rem}
+
+/* Etapa 4 — Anel de carregamento do modo Permanência */
+.click-target{z-index:2}
+.click-target .dwell-ring{position:absolute;inset:-12px;width:calc(100% + 24px);height:calc(100% + 24px);pointer-events:none;display:none;transform:rotate(-90deg)}
+.click-target.dwell-active .dwell-ring{display:block}
+.dwell-ring circle{fill:none;stroke:#0b6b2e;stroke-width:7;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:calc(100 - var(--dwell, 0) * 100)}
+.high-contrast .dwell-ring circle{stroke:#000}
+
+/* Etapa 4 — Partes da área de jogo na varredura */
+.scan-grid{position:absolute;inset:0;display:grid;pointer-events:none;z-index:0}
+.scan-cell{border:1px dashed #9db5cd;display:flex;align-items:flex-start;justify-content:flex-start;padding:6px}
+.scan-cell-label{display:none;font-weight:700;font-size:.85rem;background:#fff8b0;color:#111;padding:.1rem .45rem;border-radius:6px;border:2px solid #111}
+/* A parte destacada tem borda grossa, fundo e o texto "▶ Agora": não depende só da cor. */
+.scan-cell.scan-selected,.scan-cell.scan-selected:hover{outline:5px solid #d32b69!important;outline-offset:-5px!important;box-shadow:inset 0 0 0 9px #fff8b0!important;background:#fff8b066}
+.scan-cell.scan-selected .scan-cell-label{display:inline-block}
+.high-contrast .scan-cell{border-color:#111}
+.high-contrast .scan-cell.scan-selected{outline-color:#000!important;background:#ffdf0066}
+
+/* Etapa 5 — Proteção dos dados */
+.pro-bar{display:flex;flex-wrap:wrap;gap:.5rem .75rem;align-items:center;justify-content:center;border:2px solid #b2c7dc;border-radius:12px;background:#f7faff;padding:.6rem .8rem;margin:0 auto 1rem;max-width:44rem;font-size:.9rem}
+.pro-bar[hidden]{display:none}
+.pro-bar span{flex:1 1 16rem;text-align:left}
+.privacy-tip{border-left:5px solid #b06000;background:#fff6e6;color:#4a2c00;border-radius:8px;padding:.7rem .9rem;font-size:.9rem;line-height:1.45}
+.form-title{font-size:1.3rem;margin:0}
+.backup-box{border:2px solid #b2c7dc;border-radius:12px;padding:1rem;margin:1rem auto;max-width:44rem}
+.backup-box h2{margin-top:0;font-size:1.3rem}
+.pin-dialog form{display:flex;flex-direction:column;gap:.7rem;text-align:left}
+.pin-dialog h2,.pin-dialog #pin-texto{text-align:center}
+.pin-field{display:flex;flex-direction:column;gap:.3rem}
+.pin-field[hidden]{display:none}
+.pin-field input,#modal-editar-perfil input{font:inherit;font-size:1.3rem;padding:.7rem;border:2px solid #174ea6;border-radius:10px;letter-spacing:.15em}
+.pin-error{color:#a3122a;font-weight:700;min-height:1.2em;margin:0}
+.pin-recovery{font-family:ui-monospace,Consolas,monospace;font-size:2rem;font-weight:700;letter-spacing:.15em;text-align:center;background:#fff8b0;border:3px dashed #111;border-radius:12px;padding:.6rem;margin:0}
+.pin-recovery[hidden]{display:none}
+.link-button{background:none;border:none;color:#174ea6;text-decoration:underline;min-height:44px;min-width:0;font-weight:600;align-self:center}
+.link-button:hover{background:none;color:#103e87}
+.link-button[hidden]{display:none}
+.high-contrast .pro-bar,.high-contrast .backup-box{background:#fff;border-color:#111}
+.high-contrast .privacy-tip{background:#fff;color:#111;border-color:#111}
+.high-contrast .pin-error{color:#000;text-decoration:underline}
+
+/* Etapa 7 — Marca "Clique Bom" na tela inicial */
+.brand{display:flex;align-items:center;justify-content:center;gap:.6rem;font-size:clamp(1.4rem,4vw,1.9rem);font-weight:800;color:#174ea6;margin:0 auto .5rem}
+.brand img{border-radius:14px}
+.high-contrast .brand{color:#111}
+
+/* Etapa 8 — Painel da planilha do grupo */
+.planilha-estado{font-weight:700;border-radius:10px;background:#eef4fc;padding:.6rem .8rem;max-width:44rem}
+.check-line{display:flex;align-items:center;gap:.6rem;font-weight:600}
+.check-line input{width:1.4rem;height:1.4rem}
+.high-contrast .planilha-estado{background:#fff;border:2px solid #111}
+
+/* =====================================================================
+   Etapa 9 — Histórico responsivo e acessível (celular, tablet e computador)
+   ===================================================================== */
+.screen-intro{margin-bottom:1rem}
+/* Filtros: um cartão no topo; no celular, um campo embaixo do outro */
+.history-filter{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:.75rem;margin:0 0 .75rem;padding:.85rem;border:2px solid #b2c7dc;border-radius:14px;background:#f7faff;text-align:left}
+.filter-field{display:flex;flex-direction:column;gap:.3rem;min-width:0}
+.filter-field label{font-weight:700}
+.history-filter select,.chart-picker select{width:100%;min-height:48px;font-size:1rem}
+.history-summary{background:#e9f1ff;border-radius:12px;padding:.6rem .8rem;font-size:.95rem;line-height:1.45}
+
+/* Abas: botões grandes; no celular, 3 + 2 por linha e fixas no topo ao rolar */
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem;margin:1rem 0;position:sticky;top:0;z-index:5;background:#fff;padding:.4rem 0;border-bottom:2px solid #b2c7dc}
+.tabs [role="tab"]{min-width:0;min-height:52px;padding:.45rem .3rem;border-radius:12px;background:#fff;color:#174ea6;font-size:.95rem;line-height:1.2;border:2px solid #174ea6}
+.tabs [role="tab"]:hover{background:#e7f0ff}
+/* Aba escolhida: fundo azul, texto em negrito e barra grossa embaixo (não depende só da cor) */
+.tabs [role="tab"][aria-selected="true"]{background:#174ea6;color:#fff;box-shadow:inset 0 -6px 0 #ffb547;font-weight:800}
+.tab-panel{text-align:left;padding-top:.25rem}
+.tab-panel:focus-visible{outline:4px solid #ff9c23;outline-offset:4px;border-radius:8px}
+.panel-title{font-size:1.35rem;margin:.25rem 0 .75rem;text-align:left}
+.high-contrast .tabs{background:#fff;border-color:#111}
+.high-contrast .tabs [role="tab"]{border-color:#111;color:#111}
+.high-contrast .tabs [role="tab"][aria-selected="true"]{background:#111;color:#fff;box-shadow:inset 0 -6px 0 #ffdf00}
+
+/* Cartões de indicador: valor grande, explicação em "O que é isso?" */
+.report-kpis{grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr))}
+.report-kpi{gap:.25rem;padding:.8rem}
+.report-kpi .kpi-title{font-weight:700;font-size:.9rem;line-height:1.25}
+.report-kpi .kpi-value{font-size:1.6rem;line-height:1.15}
+.report-kpi .kpi-detail{font-size:.82rem;color:#2c4562}
+.kpi-help{margin-top:.15rem}
+.kpi-help summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:.35rem;color:#174ea6;font-weight:700;font-size:.85rem;text-decoration:underline;list-style:none}
+.kpi-help summary::-webkit-details-marker{display:none}
+.kpi-help summary::before{content:"ⓘ";font-size:1.05rem;text-decoration:none}
+.kpi-help[open] summary::before{content:"✕"}
+.kpi-help p{margin:.25rem 0 0;font-size:.85rem;line-height:1.45;max-width:none}
+.kpi-help summary:focus-visible,.cell-details summary:focus-visible,.report-analysis summary:focus-visible{outline:3px solid #ff9c23;outline-offset:2px;border-radius:6px}
+.high-contrast .kpi-help summary,.high-contrast .report-kpi .kpi-detail{color:#111}
+
+/* Análise em texto: recolhível */
+.report-analysis summary{cursor:pointer;font-weight:800;font-size:1.1rem;min-height:44px;display:flex;align-items:center}
+.report-analysis ul{padding-left:1.2rem;margin:.5rem 0 0}
+
+/* Gráficos */
+.chart-picker{display:flex;flex-direction:column;gap:.3rem;max-width:26rem;margin-bottom:.75rem}
+.chart-picker label{font-weight:700}
+.history-chart h3{font-size:1.05rem;margin:0 0 .25rem}
+.history-chart[hidden]{display:none}
+
+/* Partidas: recolhíveis e paginadas */
+.cell-details summary{cursor:pointer;min-height:40px;display:flex;align-items:center;color:#174ea6;font-weight:700;white-space:normal}
+.cell-details span{display:block;padding-left:.25rem}
+.cell-status.is-done{color:#146c34;font-weight:700}
+.cell-status.is-ended{color:#7a4a00;font-weight:700}
+#btn-mais-partidas{display:block;margin:1rem auto;width:min(100%,420px)}
+#btn-mais-partidas[hidden]{display:none}
+.history-table tr:focus{outline:4px solid #ff9c23;outline-offset:2px}
+
+/* Exportar e apagar */
+.tab-panel .backup-box{max-width:none;text-align:left}
+.tab-panel .backup-box h3{margin-top:0}
+.danger-box{border-color:#c0392b}
+.button-danger{background:#fff;color:#a3122a;border-color:#a3122a}
+.button-danger:hover{background:#fdecec}
+.button-danger:disabled{opacity:.55;cursor:not-allowed}
+.back-button{display:block;margin:1.5rem auto 0}
+
+/* ---------- Celular e tablet pequeno: a tabela vira cartões ---------- */
+@media (max-width:760px){
+  .tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .history-scroll{overflow:visible}
+  .history-table{min-width:0;font-size:.95rem}
+  .history-table caption{font-size:.9rem}
+  /* Cabeçalho escondido visualmente, mas mantido para leitores de tela */
+  .history-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .history-table,.history-table tbody{display:block}
+  .history-table tr{display:grid;grid-template-columns:1fr 1fr;gap:.35rem .9rem;border:2px solid #b2c7dc;border-radius:14px;padding:.8rem;margin:0 0 .9rem;background:#fff}
+  .history-table tbody tr:nth-child(even){background:#fff}
+  .history-table tr[hidden]{display:none}
+  .history-table td{display:flex;flex-direction:column;border:0;padding:.15rem 0;white-space:normal;min-width:0;overflow-wrap:anywhere}
+  .history-table td::before{content:attr(data-label);font-size:.75rem;font-weight:700;color:#4a5f78}
+  .history-table td.cell-date{grid-column:1/-1;font-weight:800;font-size:1.02rem;border-bottom:1px solid #d5e2f0;padding-bottom:.4rem}
+  .history-table td.cell-date::before{content:none}
+  .history-table td:nth-child(2),.history-table td:nth-child(3),.history-table td.config-cell{grid-column:1/-1}
+  .history-table td.config-cell{min-width:0;font-size:.9rem}
+  .history-table td .button-small{align-self:flex-start}
+  .high-contrast .history-table tr{border-color:#111}
+  .high-contrast .history-table td::before{color:#111}
+}
+@media (max-width:420px){
+  .report-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+  .report-kpi{padding:.65rem}
+  .report-kpi .kpi-value{font-size:1.35rem}
+  .tabs [role="tab"]{font-size:.88rem}
+  .history-summary{font-size:.9rem}
+}
+
+/* Etapa 9 — ajustes finos depois dos testes no celular */
+.tabs [role="tab"]{transition:none}            /* evita o "piscar" de cor ao trocar de aba */
+.tabs [role="tab"] span{display:block;font-size:1.15rem;line-height:1.1}
+@media (max-width:760px){
+  /* A legenda da tabela fica só para leitores de tela (o contador já explica) */
+  .history-table caption{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  /* Cartões mais baixos: números em 3 colunas */
+  .history-table tr{grid-template-columns:repeat(3,minmax(0,1fr));gap:.3rem .6rem;padding:.7rem}
+  .history-table td{font-size:.95rem}
+  .history-table td::before{font-size:.7rem;line-height:1.2}
+}
+@media (max-width:600px){
+  #historico h1{font-size:1.6rem;margin-bottom:.5rem}
+  #historico .screen-intro{display:none}
+  .pro-bar{padding:.5rem;gap:.4rem;font-size:.82rem}
+  .pro-bar span{flex-basis:100%}
+  .pro-bar button{flex:1;min-height:44px}
+  .history-filter{grid-template-columns:1fr 1fr;padding:.6rem;gap:.5rem}
+  .filter-field label{font-size:.85rem}
+  .history-summary{font-size:.85rem;padding:.5rem .65rem}
+  .tabs{margin:.6rem 0}
+}
+/* "Mais números" só existe no celular; no computador os números ficam nas colunas */
+.history-table td.cell-more{display:none}
+@media (max-width:760px){
+  .history-table td.cell-secondary{display:none}
+  .history-table td.cell-more{display:flex;grid-column:2/-1}
+  .history-table td.cell-more .cell-details summary{min-height:36px}
+  .history-table.one-player td.cell-player{display:none}
+  /* Movimento: resumo e botão lado a lado */
+  .history-table td.config-cell{flex-direction:row;flex-wrap:wrap;align-items:center;gap:.25rem .75rem}
+  .history-table td.config-cell::before{flex-basis:100%}
+  .history-table td.config-cell .cell-details{flex:1 1 9rem}
+  .history-table td.config-cell .button-small{margin-top:0}
+}
+/* Áreas de toque de pelo menos 44 px (recomendação de acessibilidade) */
+.kpi-help summary,.cell-details summary,.history-table td.cell-more .cell-details summary{min-height:44px}
+/* Gráficos: as 10 barras sempre cabem na largura, mesmo no celular */
+.chart-bars{gap:.2rem;overflow-x:visible}
+.chart-item{flex:1 1 0;min-width:0}
+@media (max-width:480px){
+  .chart-item{font-size:.6rem;letter-spacing:-.02em}
+  .chart-track{max-width:28px}
+}
+/* Janela do caminho do cursor: botão Fechar sempre visível, mesmo rolando */
+.trajectory-dialog #btn-fechar-trajetoria{position:sticky;bottom:0;width:100%;box-shadow:0 -10px 14px #fff}
+.high-contrast .trajectory-dialog #btn-fechar-trajetoria{box-shadow:none}
+@media (max-width:480px){.trajectory-dialog{padding:.9rem}.trajectory-legend{font-size:.8rem;gap:.2rem .8rem}}
+/* Computador: o Histórico usa mais largura, para a tabela caber sem rolar para o lado */
+body[data-tela="historico"] main{width:min(100%,1240px)}
+@media (min-width:761px){
+  .history-table{min-width:0}
+  .history-table th,.history-table td{white-space:normal;vertical-align:top}
+  .history-table td.cell-date{white-space:nowrap}
+  .history-table td.config-cell{min-width:11rem}
+}
+@media (min-width:761px){
+  .history-table{font-size:.84rem}
+  .history-table th,.history-table td{padding:.45rem .4rem}
+  .history-table td.cell-date{white-space:normal;min-width:6.5rem}
+  .history-table td.config-cell{min-width:9rem;max-width:12rem}
+  .history-table td.config-cell .button-small{min-width:0;width:100%;font-size:.8rem}
+}
+/* "Mais números" agora é uma coluna normal em todos os tamanhos de tela */
+.history-table td.cell-more{display:table-cell;min-width:8rem}
+@media (max-width:760px){
+  .history-table td.cell-more{display:flex;grid-column:1/-1}
+}
+/* Com um só jogador no filtro, a coluna "Jogador" não aparece (seria sempre o mesmo nome) */
+.history-table.one-player .th-player,.history-table.one-player .cell-player{display:none}
+@media (min-width:761px){
+  .history-table td.config-cell{min-width:8rem;max-width:10rem}
+  .history-table td.cell-more{min-width:7rem}
+  .history-table th,.history-table td{padding:.45rem .35rem}
+}

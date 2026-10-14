@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Ícone do Clique Bom: alvo (como as figuras do jogo) e um cursor -->
+  <rect width="512" height="512" rx="112" fill="#174ea6"/>
+  <circle cx="240" cy="240" r="172" fill="#ffffff"/>
+  <circle cx="240" cy="240" r="130" fill="#f9bb39" stroke="#0b3670" stroke-width="18"/>
+  <circle cx="240" cy="240" r="50" fill="#1458ae"/>
+  <path d="M292 292 L292 452 L336 410 L366 474 L398 459 L368 396 L428 396 Z" fill="#ffffff" stroke="#0b3670" stroke-width="14" stroke-linejoin="round"/>
+</svg>
